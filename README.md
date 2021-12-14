@@ -6,7 +6,7 @@
 - Develop an process that can:
     - when given a Chinese poem as an input,
     - find an optimized path stringing the characters together,
-    - by moving from character to character via shared components,
+    - by moving from character to character via shared components and intermediate characters,
     - while:
         - avoiding using the basic strokes as a component to link characters,
         - minimizing recourse to using "compound" strokes as a component to link characters,
