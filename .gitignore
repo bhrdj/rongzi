@@ -1,4 +1,4 @@
 # data/raw/*  # KEEP THE RAW DATA: IT ISN'T TOO BIG
 data/processed/*
-
+.ipynb_checkpoints
 
