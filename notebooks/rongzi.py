@@ -6,8 +6,11 @@ import graphviz, pickle
 # Fields: [Component, Strokes, CompositionType, LeftComponent, LeftStrokes, RightComponent, RightStrokes, Signature, Notes, Section]
 
 
-class CharTree():
-    """make it work"""
+class rongzi():
+    """
+        "Melt" a Chinese character into neighbors sharing similar components.
+        
+    """
     def __init__(self, char):
         self._char = char
         self._forestIndex = forest.loc[forest.Component == self.char].index[0]
