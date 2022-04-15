@@ -5,13 +5,15 @@ import graphviz, pickle
 
 class RongZi(object):
     """
-        "Melt" a Chinese character
-        into neighbors sharing similar components.        
+        Melt a Chinese character component
+            into a collection of neighbors sharing similar components.
+        Connect" two components
+            via a chain of components with neighbor-relationships.
+        
+        
     """
     
-    # Load ccd, pdb & kdb dictionaries, as class objects.
-    # MOVING FORWARD, I SHOULD PROBABLY REFACTOR TO EMPLOY @classmethod AND @property
-    # https://stackoverflow.com/questions/128573/using-property-on-classmethods
+    # LOAD ccd, pdb & kdb DICTIONARIES, AS CLASS OBJECTS.
         # ccd: pd.DataFrame Chinese Character Decomposition
             # indices are components, values are characteristics of component.
         # pdb: dict[str, str] Parents Database
@@ -28,16 +30,27 @@ class RongZi(object):
         self.paths = {component: [component]}
         self.scores = {component: 0}        
     
+    # USER-FACING METHODS FOR WALKING THE WEB OF NEIGHBOR COMPONENTS
     @classmethod
     def get_kids(self, c:str) -> list[str]:
+        """
+        Components may have any number of kids.
+        Kids are formed by composition of a component with another component.
+        """
         return self.kdb[c]
     
     @classmethod
     def get_parents(self, c:str) -> list[str]:
+        """
+        Components may have a maximum of two parents.
+        Parents are formed by decomposition of a component into sub-components.
+        """
         return self.pdb[c]
     
+    # METHODS FOR SCORING AND COMPARING ALTERNATIVE PATHS BETWEEN COMPONENTS
     @staticmethod
     def scorefunc(strokes:int):
+        """For some stroke-count, calculate the increase in a path's score."""
         x = strokes - 6
         y1 = 0 if x < 0 else .001*x**2
         y2 = 0 if x > 0 else .07*np.exp(-x)
@@ -45,16 +58,20 @@ class RongZi(object):
     
     @classmethod
     def score(self, c:str) -> int:
+        """For a component, get stroke-count and return the path-score increase."""
         strokes = self.ccd.loc[c].Strokes
-        epsilon = 0.1 / ord(c)
+        epsilon = 0.1 / ord(c) # this small value keeps each score unique.
         return self.scorefunc(strokes) + epsilon
     
+    # METHODS FOR GROWING NEIGHBORHOOD
     def _add_neighbor_path_and_score(self, previous:str, new:str):
+        """Internal method to add a character component to an instance."""
         self.neighbors.add(new)
         self.paths[new] = self.paths[previous] + [new]
         self.scores[new] = self.scores[previous] + self.score(new)        
     
     def add_neighbors(self):
+        """Grow the instance's neighborhood by one character in all directions."""
         neighbors, scores = self.neighbors.copy(), self.scores.copy()
         for i in neighbors:
             newfolk = self.get_parents(i) + self.get_kids(i)
@@ -66,6 +83,7 @@ class RongZi(object):
     
     @classmethod
     def paths_a2b(self, a: 'RongZi', b: 'RongZi') -> pd.DataFrame:
+        """Find paths between components a and b, and sort by path scores."""
         # get the components in the intersection of two neighborhoods
         intersection = a.neighbors.intersection(b.neighbors)
         
@@ -86,14 +104,14 @@ class RongZi(object):
         
         # join scores and paths
         paths_scores = paths.join(scores).sort_values('score', ascending=True)
-        paths_scores.drop_duplicates(subset='path', inplace=True)  # dont think i need this
+        paths_scores.drop_duplicates(subset='path', inplace=True)  # may not need this
         paths_scores.dropna(inplace=True)
-        
         
         return paths_scores
     
     @classmethod
     def analyze_sequence(self, seq:str, return_instances=False) -> pd.DataFrame:
+        """"""
         rz = {}
         # initialize and grow instances
         for c in seq:
@@ -111,5 +129,6 @@ class RongZi(object):
         
         return paths
 
-#     @property
-#     def char(self):
+# TODO
+# MOVING FORWARD, I SHOULD PROBABLY REFACTOR ccd, pdb, kdb TO EMPLOY @classmethod AND @property
+# https://stackoverflow.com/questions/128573/using-property-on-classmethods
