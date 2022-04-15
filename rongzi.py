@@ -1,42 +1,54 @@
 #!/usr/bin/env python3
 
-import pandas as pd, numpy as np
-import graphviz, pickle, gc
+import pandas as pd, numpy as np, pickle
 #!conda install pandas=1.3.4
 
 class RongZi(object):
     """
-        "Melt" a Chinese character
-        into neighbors sharing similar components.        
+        Supply Chinese characters, 
+        and the application will find optimized paths connecting them,
+        via a chain of component-neighbor-relationships.
     """
     
-    # Load ccd, pdb & kdb dictionaries, as class objects.
+    # LOAD ccd, pdb, & kdb DICTIONARIES AS CLASS OBJECTS.
         # ccd: pd.DataFrame Chinese Character Decomposition
             # indices are components, values are characteristics of component.
         # pdb: dict[str, str] Parents Database
             # keys are components, values are parent-/decomposed-components.
         # kdb: dict[str, str] Kids Database
             # keys are components, values are child-/composite-components.
-    with open('../docs/pickle/ccd_pdb_kdb.pickle', 'rb') as f:
+    with open('./assets/ccd_pdb_kdb.pickle', 'rb') as f:
         ccd, pdb, kdb = pickle.load(f)
     del f
     
-    def __init__(self, component:str, *args, **kwargs):
+    # INIT
+    def __init__(self, component:str='', *args, **kwargs):
         self.component = component
         self.neighbors = {component}
         self.paths = {component: [component]}
         self.scores = {component: 0}        
     
+    # GRANULAR METHODS FOR WALKING THE GRAPH OF NEIGHBOR COMPONENTS
     @classmethod
     def get_kids(self, c:str) -> list[str]:
+        """
+        Components may have any number of kids.
+        Kids are formed by composition of a component with another component.
+        """
         return self.kdb[c]
     
     @classmethod
     def get_parents(self, c:str) -> list[str]:
+        """
+        Components may have a maximum of two parents.
+        Parents are formed by decomposition of a component into sub-components.
+        """
         return self.pdb[c]
     
+    # METHODS TO 
     @staticmethod
     def scorefunc(strokes:int):
+        """For some stroke-count, calculate the increase in a path's score."""
         x = strokes - 6
         y1 = 0 if x < 0 else .001*x**2
         y2 = 0 if x > 0 else .07*np.exp(-x)
@@ -44,27 +56,37 @@ class RongZi(object):
     
     @classmethod
     def score(self, c:str) -> int:
+        """For a component, get stroke-count and return the path-score increase."""
         strokes = self.ccd.loc[c].Strokes
         epsilon = 0.1 / ord(c)
         return self.scorefunc(strokes) + epsilon
     
     def _add_neighbor_path_and_score(self, previous:str, new:str):
+        """Internal method to add a character component to an instance."""
         self.neighbors.add(new)
         self.paths[new] = self.paths[previous] + [new]
         self.scores[new] = self.scores[previous] + self.score(new)        
     
     def add_neighbors(self):
+        """Grow the instance's neighborhood by one character in all directions."""
         neighbors, scores = self.neighbors.copy(), self.scores.copy()
         for i in neighbors:
             newfolk = self.get_parents(i) + self.get_kids(i)
             for j in newfolk:
                 if j is None:
                     continue
-                if (j not in self.neighbors) or (self.scores[j] > self.score(j)):
+                # Add path if the neighbor-component is new.
+                # Replace an old neighbor's path if the new path scores better/lower.
+                if (
+                    (j not in self.neighbors) 
+                    or 
+                    (self.scores[j] > self.scores[i] + self.score(j))
+                ): 
                     self._add_neighbor_path_and_score(i, j)
     
     @classmethod
-    def paths_a2b(self, a: 'RongZi', b: 'RongZi') -> pd.DataFrame:
+    def paths_a2b(self, a: 'RongZi', b: 'RongZi', max_paths=5) -> pd.DataFrame:
+        """Find paths between components a and b, and sort by path scores."""
         # get the components in the intersection of two neighborhoods
         intersection = a.neighbors.intersection(b.neighbors)
         
@@ -87,12 +109,15 @@ class RongZi(object):
         paths_scores = paths.join(scores).sort_values('score', ascending=True)
         paths_scores.drop_duplicates(subset='path', inplace=True)  # dont think i need this
         paths_scores.dropna(inplace=True)
-        
-        
-        return paths_scores
+                
+        return paths_scores.iloc[:max_paths]
     
     @classmethod
-    def analyze_sequence(self, seq:str, return_instances=False) -> pd.DataFrame:
+    def analyze_sequence(self, seq:str, return_instances=False, **kwargs) -> pd.DataFrame:
+        """
+            With a sequence of components as a string, 
+            get the best paths between each adjacent pair.
+        """
         rz = {}
         # initialize and grow instances
         for c in seq:
@@ -110,5 +135,4 @@ class RongZi(object):
         
         return paths
 
-#     @property
-#     def char(self):
+
