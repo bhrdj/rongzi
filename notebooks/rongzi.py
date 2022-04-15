@@ -17,7 +17,7 @@ class RongZi(object):
             # keys are components, values are parent-/decomposed-components.
         # kdb: dict[str, str] Kids Database
             # keys are components, values are child-/composite-components.
-    with open('../docs/pickle/ccd_kdb.pickle', 'rb') as f:
+    with open('../docs/pickle/ccd_pdb_kdb.pickle', 'rb') as f:
         ccd, pdb, kdb = pickle.load(f)
     del f
     
@@ -60,7 +60,7 @@ class RongZi(object):
             for j in newfolk:
                 if j is None:
                     continue
-                if j not in self.neighbors or self.scores[j] > self.score(j):
+                if (j not in self.neighbors) or (self.scores[j] > self.score(j)):
                     self._add_neighbor_path_and_score(i, j)
     
     @classmethod
@@ -72,28 +72,38 @@ class RongZi(object):
         scores = {c: a.scores[c] + b.scores[c] - self.score(c) for c in intersection}
         scores = pd.Series(scores, name='score').to_frame()
         
-        # 
-        paths = {c: a.paths[c] + b.paths[c][:-1][::-1] for c in intersection}
+        # concat the path scores from each neighborhood's portion, truncate redundant midpoint
+        paths = {c: a.paths[c] + b.paths[c][:-1][::-1] for c in intersection}                
+        
+        # convert paths from lists to strings
+        paths = {c: ''.join(paths[c]) for c in paths}
         paths = pd.Series(paths, name='path').to_frame()
         
+        # drop paths with redundant cycles
+        no_redundant_cycles = paths.applymap(lambda x: len(x) == len(set(x)))
+        paths = paths[no_redundant_cycles]
+        
+        # join scores and paths
         paths_scores = paths.join(scores).sort_values('score', ascending=True)
-        paths_scores['path_str'] = paths_scores.path.map(lambda x: ''.join(x))
-        paths_scores.drop_duplicates(subset='path_str', inplace=True)
-        paths_scores.drop(columns='path', inplace=True)
+        paths_scores.drop_duplicates(subset='path', inplace=True)  # dont think i need this
+        paths_scores.dropna(inplace=True)
+        
         
         return paths_scores
     
     @classmethod
     def analyze_sequence(self, seq:str, return_instances=False) -> pd.DataFrame:
         rz = {}
+        # initialize and grow instances
         for c in seq:
             rz[c] = RongZi(c)
             while len(rz[c].neighbors) < 1000:
-                rz[c].add_neighbors()                
+                rz[c].add_neighbors()
         
+        # get paths for each adjacent character pair in the input string
         paths = pd.DataFrame()
         for a,b in zip(seq[:-1], seq[1:]):
-            paths[a+b] = self.paths_a2b(rz[a],rz[b]).reset_index().iloc[:5].path_str
+            paths[a+b] = self.paths_a2b(rz[a],rz[b]).reset_index().iloc[:10].path
         
         if return_instances:
             return paths, rz
