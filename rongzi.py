@@ -65,7 +65,7 @@ class RongZi(object):
         """Internal method to add a character component to an instance."""
         self.neighbors.add(new)
         self.paths[new] = self.paths[previous] + [new]
-        self.scores[new] = self.scores[previous] + self.score(new)        
+        self.scores[new] = self.scores[previous] + self.score(new)
     
     def add_neighbors(self):
         """Grow the instance's neighborhood by one character in all directions."""
