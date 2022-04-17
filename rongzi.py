@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import pandas as pd, numpy as np, pickle
+import pandas as pd, numpy as np, pickle, graphviz
 #!conda install pandas=1.3.4
 
 class RongZi(object):
@@ -9,25 +9,31 @@ class RongZi(object):
         and the application will find optimized paths connecting them,
         via a chain of component-neighbor-relationships.
     """
-    
-    # LOAD ccd, pdb, & kdb DICTIONARIES AS CLASS OBJECTS.
-        # ccd: pd.DataFrame Chinese Character Decomposition
-            # indices are components, values are characteristics of component.
-        # pdb: dict[str, str] Parents Database
-            # keys are components, values are parent-/decomposed-components.
-        # kdb: dict[str, str] Kids Database
-            # keys are components, values are child-/composite-components.
-    with open('./assets/ccd_pdb_kdb.pickle', 'rb') as f:
-        ccd, pdb, kdb = pickle.load(f)
-    del f
-    
-    # INIT
+            
     def __init__(self, component:str='', *args, **kwargs):
         self.component = component
         self.neighbors = {component}
         self.paths = {component: [component]}
         self.scores = {component: 0}        
-    
+        
+    def _load_class_objects() -> tuple[pd.DataFrame, dict, dict]:
+        """
+            LOAD ccd, pdb, & kdb DICTIONARIES AS CLASS OBJECTS:
+            ccd:
+                pd.DataFrame Chinese Character Decomposition
+                indices are components, values are characteristics of component.
+            pdb:
+                dict[str, str] Parents Database
+                keys are components, values are parent-/decomposed-components.
+            kdb:
+                dict[str, str] Kids Database
+                keys are components, values are child-/composite-components.
+        """
+        with open('./assets/ccd_pdb_kdb.pickle', 'rb') as f:
+            ccd, pdb, kdb = pickle.load(f)
+        del f
+        return ccd, pdb, kdb
+
     # GRANULAR METHODS FOR WALKING THE GRAPH OF NEIGHBOR COMPONENTS
     @classmethod
     def get_kids(self, c:str) -> list[str]:
@@ -45,7 +51,7 @@ class RongZi(object):
         """
         return self.pdb[c]
     
-    # METHODS TO 
+    # METHODS TO SCORE AND SORT PATHS
     @staticmethod
     def scorefunc(strokes:int):
         """For some stroke-count, calculate the increase in a path's score."""
@@ -56,11 +62,12 @@ class RongZi(object):
     
     @classmethod
     def score(self, c:str) -> int:
-        """For a component, get stroke-count and return the path-score increase."""
+        """For a component, get stroke-count & return the path-score increase."""
         strokes = self.ccd.loc[c].Strokes
         epsilon = 0.1 / ord(c)
         return self.scorefunc(strokes) + epsilon
     
+    # METHODS TO GROW NEIGHBORHOOD
     def _add_neighbor_path_and_score(self, previous:str, new:str):
         """Internal method to add a character component to an instance."""
         self.neighbors.add(new)
@@ -68,15 +75,15 @@ class RongZi(object):
         self.scores[new] = self.scores[previous] + self.score(new)
     
     def add_neighbors(self):
-        """Grow the instance's neighborhood by one character in all directions."""
+        """Grow the instance's neighborhood by 1 character in all directions."""
         neighbors, scores = self.neighbors.copy(), self.scores.copy()
         for i in neighbors:
             newfolk = self.get_parents(i) + self.get_kids(i)
             for j in newfolk:
                 if j is None:
                     continue
-                # Add path if the neighbor-component is new.
-                # Replace an old neighbor's path if the new path scores better/lower.
+                # Add path if the neighbor-component is new,
+                # replace an old neighbor's path if new path scores better/lower.
                 if (
                     (j not in self.neighbors) 
                     or 
@@ -90,13 +97,15 @@ class RongZi(object):
         # get the components in the intersection of two neighborhoods
         intersection = a.neighbors.intersection(b.neighbors)
         
-        # sum the path scores from each neighborhood's portion, minus redundant midpoint
-        scores = {c: a.scores[c] + b.scores[c] - self.score(c) for c in intersection}
+        # sum the path scores from each neighborhood's portion, 
+        # minus redundant midpoint
+        scores = {c: a.scores[c] + b.scores[c] - self.score(c) 
+                  for c in intersection}
         scores = pd.Series(scores, name='score').to_frame()
         
-        # concat the path scores from each neighborhood's portion, truncate redundant midpoint
+        # concat the path scores from each neighborhood's portion, 
+        # truncate redundant midpoint
         paths = {c: a.paths[c] + b.paths[c][:-1][::-1] for c in intersection}                
-        
         # convert paths from lists to strings
         paths = {c: ''.join(paths[c]) for c in paths}
         paths = pd.Series(paths, name='path').to_frame()
@@ -107,13 +116,14 @@ class RongZi(object):
         
         # join scores and paths
         paths_scores = paths.join(scores).sort_values('score', ascending=True)
-        paths_scores.drop_duplicates(subset='path', inplace=True)  # dont think i need this
+        paths_scores.drop_duplicates(subset='path', inplace=True)  # unnecessary?
         paths_scores.dropna(inplace=True)
                 
         return paths_scores.iloc[:max_paths]
     
     @classmethod
-    def analyze_sequence(self, seq:str, return_instances=False, **kwargs) -> pd.DataFrame:
+    def analyze_sequence(self, 
+        seq:str, return_instances=False, **kwargs) -> pd.DataFrame:
         """
             With a sequence of components as a string, 
             get the best paths between each adjacent pair.
@@ -133,6 +143,25 @@ class RongZi(object):
         if return_instances:
             return paths, rz
         
-        return paths
+        return paths        
+        
+    def get_vertical_family_tree(self):
+        self.vert_tree = graphviz.Digraph(comment='vertical family tree')
+        c = self.component
+        # get nodes and edges of kids
+        for k in self.get_kids(c):
+            if c == k:
+                continue
+            self.vert_tree.node(k)
+            self.vert_tree.edges([f"{c}{k}"])
+        
+        # get nodes and edges of parents
+        for p in self.get_parents(c):
+            self.vert_tree.node(p)
+            self.vert_tree.edges([f"{p}{c}"])
+        
+        return None
+    
+    ccd, pdb, kdb = _load_class_objects()
 
 

@@ -4,3 +4,4 @@ streamlit>=0.81.0
 graphviz>=0.16
 matplotlib>=3.2.2
 tabulate
+graphviz
