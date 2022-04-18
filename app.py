@@ -135,9 +135,11 @@ def family_tree():
         tree_rz = rongzi.RongZi(c)
         excess_kids = tree_rz.get_vertical_family_tree(max_sibs)
         tree_rz.vert_tree.render(format='pdf', directory=directory)
-    if excess_kids:
-        st.markdown(f'*Note: Some components in this tree are so common that they are present in more than {max_sibs} larger characters.  So, the descendants of the following list of characters: {excess_kids} were truncated to a maximum of {max_sibs} in this graph.*')
-        
+    try:
+        st.markdown(f'*Note: Some components in this tree are so common that they are present in more than {max_sibs} larger characters.'\
+                    f'So, the descendants of the following list of characters: {excess_kids} were truncated to a maximum of {max_sibs} in this graph.*')
+    except:
+        pass
 
 def test_graphviz_pdf():
     import streamlit as st
