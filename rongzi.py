@@ -10,11 +10,11 @@ class RongZi(object):
         via a chain of component-neighbor-relationships.
     """
             
-    def __init__(self, component:str='', *args, **kwargs):
-        self.component = component
-        self.neighbors = {component}
-        self.paths = {component: [component]}
-        self.scores = {component: 0}        
+    def __init__(self, c:str='蓉', *args, **kwargs):
+        self.component = c
+        self.neighbors = {c}
+        self.paths = {c: [c]}
+        self.scores = {c: 0}        
         
     def _load_class_objects() -> tuple[pd.DataFrame, dict, dict]:
         """
@@ -46,10 +46,19 @@ class RongZi(object):
     @classmethod
     def get_parents(self, c:str) -> list[str]:
         """
-        Components may have a maximum of two parents.
+        Components initially have a maximum of two parents. 
+        Up to a max of ~6 after string split.
         Parents are formed by decomposition of a component into sub-components.
         """
-        return self.pdb[c]
+        l = self.pdb[c]
+        l = [list(i) for i in l if i]
+        l = [item for sublist in l for item in sublist 
+             if item not in ['?', '*', c, 'nan']]
+        try:
+            l.remove(c)
+        except ValueError:
+            pass
+        return l
     
     # METHODS TO SCORE AND SORT PATHS
     @staticmethod
@@ -66,7 +75,7 @@ class RongZi(object):
         strokes = self.ccd.loc[c].Strokes
         epsilon = 0.1 / ord(c)
         return self.scorefunc(strokes) + epsilon
-    
+
     # METHODS TO GROW NEIGHBORHOOD
     def _add_neighbor_path_and_score(self, previous:str, new:str):
         """Internal method to add a character component to an instance."""
@@ -144,23 +153,57 @@ class RongZi(object):
             return paths, rz
         
         return paths        
-        
-    def get_vertical_family_tree(self):
+    
+    
+#     def get_all_descendants(self):
+#     """
+#         Populates self.vert_tree with all kids of kids.
+#         For each generation, maximum of 10 
+#     """
+#     c = self.component
+#     ad_stack = [c]
+#     ad_dict = {}
+
+#     while ad_stack:
+#         c = ad_stack.pop(0)
+#         kids = self.kdb[c]
+#         for kid in kids:
+#             if c in 
+#             ad_stack.append(kid)
+#             ad_list.append(kid)
+
+# #     return ad_list
+    
+    def get_vertical_family_tree(self, max_sibs=10) -> bool:
         self.vert_tree = graphviz.Digraph(comment='vertical family tree')
         c = self.component
+        
+        excess_kids = []
+        clus = {}
         # get nodes and edges of kids
-        for k in self.get_kids(c):
-            if c == k:
-                continue
-            self.vert_tree.node(k)
-            self.vert_tree.edges([f"{c}{k}"])
-        
+        kids = self.get_kids(c)
+        if len(kids) > max_sibs:
+            kids = kids[:max_sibs]
+            excess_kids.append(c)
+        with self.vert_tree.subgraph(name=str(1)) as clus:
+            for k in kids:
+                if k == c or k is None:
+                    continue
+                clus.node(k)
+                self.vert_tree.edges([f"{c}{k}"])
+        #
         # get nodes and edges of parents
-        for p in self.get_parents(c):
-            self.vert_tree.node(p)
-            self.vert_tree.edges([f"{p}{c}"])
+        with self.vert_tree.subgraph(name=str(2)) as clus:
+            for p in self.get_parents(c):
+                if p is None:
+                    continue
+                clus.node(p)
+                self.vert_tree.edges([f"{p}{c}"])
+
+        self.vert_tree.engine = 'neato'
+        self.vert_tree.attr('graph', overlap='false')
         
-        return None
+        return excess_kids
     
     ccd, pdb, kdb = _load_class_objects()
 
