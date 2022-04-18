@@ -155,53 +155,76 @@ class RongZi(object):
         return paths        
     
     
-#     def get_all_descendants(self):
-#     """
-#         Populates self.vert_tree with all kids of kids.
-#         For each generation, maximum of 10 
-#     """
-#     c = self.component
-#     ad_stack = [c]
-#     ad_dict = {}
+    # def get_all_descendants(self):
+    # """
+    #     Populates self.vert_tree with all kids of kids.
+    #     For each generation, maximum of 10 
+    # """
+    # c = self.component
+    # ad_stack = [c]
+    # ad_dict = {}
 
-#     while ad_stack:
-#         c = ad_stack.pop(0)
-#         kids = self.kdb[c]
-#         for kid in kids:
-#             if c in 
-#             ad_stack.append(kid)
-#             ad_list.append(kid)
-
-# #     return ad_list
+    # while ad_stack:
+    #     c = ad_stack.pop(0)
+    #     kids = self.kdb[c]
+    #     for kid in kids:
+    #         if c in 
+    #         ad_stack.append(kid)
+    #         ad_list.append(kid)
     
-    def get_vertical_family_tree(self, max_sibs=10) -> bool:
+    # return ad_list
+    
+    def get_vertical_family_tree(self, max_sibs) -> bool:
         self.vert_tree = graphviz.Digraph(comment='vertical family tree')
         c = self.component
         
         excess_kids = []
         clus = {}
-        # get nodes and edges of kids
-        kids = self.get_kids(c)
-        if len(kids) > max_sibs:
-            kids = kids[:max_sibs]
-            excess_kids.append(c)
-        with self.vert_tree.subgraph(name=str(1)) as clus:
-            for k in kids:
-                if k == c or k is None:
-                    continue
-                clus.node(k)
-                self.vert_tree.edges([f"{c}{k}"])
-        #
-        # get nodes and edges of parents
-        with self.vert_tree.subgraph(name=str(2)) as clus:
+        self.vert_tree.attr('graph', compound='true', layout='dot') #, margin='0', ratio='compress', pack='true')                
+        self.vert_tree.node(c, margin='0', fixedsize='true', width='.3', height='0.3', tooltip=c, fillcolor='yellow')
+        
+        def plot_parental_generation(c:str):
+            "get nodes and edges of parents"
+            parents = self.get_parents(c)
+            if len(parents) == 0:
+                return
+            # with self.vert_tree.subgraph(name=f'cluster_p{c}') as clus:
             for p in self.get_parents(c):
                 if p is None:
                     continue
-                clus.node(p)
-                self.vert_tree.edges([f"{p}{c}"])
-
-        self.vert_tree.engine = 'neato'
-        self.vert_tree.attr('graph', overlap='false')
+                self.vert_tree.node(p, tooltip=p, shape='plaintext', width='.3', height='.3', fixedsize='true', fontsize='16') # k='.3',
+                self.vert_tree.edge(p, c, arrowsize='.3') # f'cluster_p{c}'
+            return self.get_parents(c)
+        
+        def plot_filial_generation(c:str):
+            "get nodes and edges of kids"
+            kids = self.get_kids(c)
+            kids = [kid for kid in kids if ((kid!=c) and (kid is not None))]
+            if len(kids) > max_sibs:
+                kids = kids[:max_sibs]
+                excess_kids.append(c)
+            if len(kids) == 0:
+                return
+            kid_mid = kids[len(kids) // 2]
+            with self.vert_tree.subgraph(name=f'cluster_k{c}') as clus:
+                for kid in kids:
+                    clus.node(kid, tooltip=kid, shape='plaintext', width='.2', height='0.2', fixedsize='true', fontsize='16') # k='.3'
+                    if kid == kid_mid:
+                        self.vert_tree.edge(c, kid_mid, lhead=f'cluster_k{c}', arrowsize='.3')
+                    else:
+                        self.vert_tree.edge(c, kid, lhead=f'cluster_k{c}', arrowsize='.3', style='invis')
+        
+        def recurse(c:str, plotfunc:'Callable'):
+            stack = [c]
+            while stack:
+                i = stack.pop(0)
+                newfolk = plotfunc(i)
+                if newfolk: stack = stack + newfolk
+                
+        recurse(c, plot_parental_generation)
+        
+        plot_filial_generation(c)
+        
         
         return excess_kids
     
