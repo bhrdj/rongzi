@@ -4,5 +4,3 @@ streamlit>=0.81.0
 graphviz>=0.16
 tabulate
 fpdf
-matplotlib>=3.2.2
-scikit-learn

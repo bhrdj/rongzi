@@ -9,4 +9,4 @@ source bin/activate
 cd ..
 pip install -r requirements.txt
 pip install streamlit
-# streamlit hello
+# streamlit hellopython3 -m pip install --upgrade pip
