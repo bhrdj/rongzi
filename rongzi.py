@@ -204,7 +204,7 @@ class RongZi(object):
         
         return excess_kids
     
-    def get_paths_graph(pp: pd.DataFrame):
+    def get_paths_graph(self, pp: pd.DataFrame):
         g = graphviz.Digraph()
         pp = pp.iloc[0]
         node_pairs = pp.index.to_list()
@@ -224,8 +224,6 @@ class RongZi(object):
             g.edge(paths[i], node_pairs[i][1])
 
         return g            
-
-    
     
     ccd, pdb, kdb = _load_class_objects()
 

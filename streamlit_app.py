@@ -55,11 +55,11 @@ def phrase():
         return p
     
     def show_path_graph(phrase, pp:pd.DataFrame):
-        
         if pp.empty:
             return None
         dot = rz.get_paths_graph(pp)
-        export_graphviz_pdf()
+        st.graphviz_chart(dot)
+        export_graphviz_pdf(phrase, dot)
         
     def show_alternative_paths(pp:pd.DataFrame):
         "Display alternative paths as dataframe results"
@@ -78,6 +78,8 @@ def phrase():
     
     # show phrase
     st.markdown(f"## {p}")
+    
+    show_path_graph(p, phrase_paths)
 
     # show translation of chengyu (if it's a chengyu)
     if input_method == input_methods[0]: 
