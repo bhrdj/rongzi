@@ -146,7 +146,7 @@ def family_tree():
         st.markdown(f"## {c}")
         tree_rz = rongzi.RongZi(c)
         excess_kids = tree_rz.get_vertical_family_tree(max_sibs)
-        export_graphviz_pdf(tree_rz)
+        export_graphviz_pdf(c, tree_rz)
         st.graphviz_chart(tree_rz.vert_tree)
     
     if excess_kids:
@@ -159,14 +159,14 @@ def _create_download_link(val, filename):
     (Pdf format may be easier to resize and view.)'''
     return return_str
     
-def export_graphviz_pdf(dot):
+def export_graphviz_pdf(c:str, dot):
     export_as_pdf = True # st.button("Export Report")
     if export_as_pdf:
         pdf = FPDF()
         pdf.add_page()
         with NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
             bytes_file = graphviz.pipe('dot', 'pdf', bytes(dot.vert_tree.source, 'utf-8'))   # neato instead of dot? sfdp?
-            html = _create_download_link(bytes_file, "testfile")
+            html = _create_download_link(bytes_file, f"family_tree_{c}")
             st.markdown(html, unsafe_allow_html=True)
 
 linkback_markdown = """
@@ -181,7 +181,7 @@ traditional_chars_disclaimer = """
 def main():
     st.sidebar.markdown(linkback_markdown)
     page_titles = ["Proverb Exploration","Family-Tree Graph Visualization"]
-    page = st.sidebar.radio('', page_titles, index=1)
+    page = st.sidebar.radio('', page_titles, index=0)
     st.sidebar.markdown('')
     st.sidebar.markdown(traditional_chars_disclaimer)
     if page == page_titles[0]:

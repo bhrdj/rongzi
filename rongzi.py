@@ -180,7 +180,7 @@ class RongZi(object):
         
         excess_kids = []
         clus = {}
-        self.vert_tree.attr('graph', compound='true', layout='dot') #, margin='0', ratio='compress', pack='true')                
+        self.vert_tree.attr('graph', compound='true', layout='dot')               
         self.vert_tree.node(c, margin='0', fixedsize='true', width='.3', height='0.3', tooltip=c, fillcolor='yellow')
         
         def plot_parental_generation(c:str):
@@ -192,7 +192,7 @@ class RongZi(object):
             for p in self.get_parents(c):
                 if p is None:
                     continue
-                self.vert_tree.node(p, tooltip=p, shape='plaintext', width='.3', height='.3', fixedsize='true', fontsize='16') # k='.3',
+                self.vert_tree.node(p, tooltip=p, shape='plaintext', width='.3', height='.3', fixedsize='true', fontsize='16') 
                 self.vert_tree.edge(p, c, arrowsize='.3') # f'cluster_p{c}'
             return self.get_parents(c)
         
@@ -208,7 +208,7 @@ class RongZi(object):
             kid_mid = kids[len(kids) // 2]
             with self.vert_tree.subgraph(name=f'cluster_k{c}') as clus:
                 for kid in kids:
-                    clus.node(kid, tooltip=kid, shape='plaintext', width='.2', height='0.2', fixedsize='true', fontsize='16') # k='.3'
+                    clus.node(kid, tooltip=kid, shape='plaintext', width='.2', height='0.2', fixedsize='true', fontsize='16') 
                     if kid == kid_mid:
                         self.vert_tree.edge(c, kid_mid, lhead=f'cluster_k{c}', arrowsize='.3')
                     else:

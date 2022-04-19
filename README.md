@@ -1,15 +1,16 @@
 # rongzi
-Supply Chinese characters, and the application will find optimized component-paths connecting them.  
-Like melting a word. Or traversing a banyan grove by following branches between prop-trunks.  
+Input Chinese characters, and the application will find optimized component-paths connecting them. It's like melting a word. Or traversing a banyan grove by following branches between prop-trunks.  
 With appreciation and respect for the late poet Yungtze (1922-2021).
 
-## input: ```蓉 榮```
-## output: ```蓉 容 榕 木 榮```
+## input: 蓉 榮
+## output: 蓉🡒容🡒榕🡒木🡒榮
 
 ---
 
-### Demonstration webapp:
-(Link to Streamlit webapp forthcoming.)
+### Link to streamlit demonstration webapp:
+<font size="6"><a href="http://rongzi.bhrdwj.net">http://rongzi.bhrdwj.net</a></font>
+
+ 
 
 ### Usage:
 
