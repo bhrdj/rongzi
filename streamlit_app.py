@@ -35,8 +35,7 @@ def phrase():
             based on the selected input method:
                 - populate subsequent sections of the page
                 - return the phrase as string p
-        """
-        
+        """      
         def refresh_page():
             "refresh page, to get a new random chengyu"
             st.experimental_singleton.clear()
@@ -54,12 +53,20 @@ def phrase():
             p = st.text_input(label, max_chars=7)
             
         return p
-
-    def show_alternative_paths(df:pd.DataFrame):
+    
+    def show_path_graph(phrase, pp:pd.DataFrame):
+        
+        if pp.empty:
+            return None
+        dot = rz.get_paths_graph(pp)
+        export_graphviz_pdf()
+        
+    def show_alternative_paths(pp:pd.DataFrame):
         "Display alternative paths as dataframe results"
-        if not df.empty:
-            st.markdown("#### Alternative paths between each character in the phrase.")
-            st.markdown(df.to_markdown(index=False))
+        if pp.empty:
+            return None
+        st.markdown("#### Alternative paths between each character in the phrase.")
+        st.markdown(pp.to_markdown(index=False))
         return None
     
     chengyus = load_chengyus()

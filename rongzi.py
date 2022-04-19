@@ -154,33 +154,12 @@ class RongZi(object):
         
         return paths        
     
-    
-    # def get_all_descendants(self):
-    # """
-    #     Populates self.vert_tree with all kids of kids.
-    #     For each generation, maximum of 10 
-    # """
-    # c = self.component
-    # ad_stack = [c]
-    # ad_dict = {}
-
-    # while ad_stack:
-    #     c = ad_stack.pop(0)
-    #     kids = self.kdb[c]
-    #     for kid in kids:
-    #         if c in 
-    #         ad_stack.append(kid)
-    #         ad_list.append(kid)
-    
-    # return ad_list
-    
     def get_vertical_family_tree(self, max_sibs) -> bool:
-        self.vert_tree = graphviz.Digraph(comment='vertical family tree')
+        self.vert_tree = graphviz.Digraph(comment='vertical family tree') # compound='true', layout='dot'
         c = self.component
         
         excess_kids = []
         clus = {}
-        self.vert_tree.attr('graph', compound='true', layout='dot')               
         self.vert_tree.node(c, margin='0', fixedsize='true', width='.3', height='0.3', tooltip=c, fillcolor='yellow')
         
         def plot_parental_generation(c:str):
@@ -188,12 +167,11 @@ class RongZi(object):
             parents = self.get_parents(c)
             if len(parents) == 0:
                 return
-            # with self.vert_tree.subgraph(name=f'cluster_p{c}') as clus:
             for p in self.get_parents(c):
                 if p is None:
                     continue
                 self.vert_tree.node(p, tooltip=p, shape='plaintext', width='.3', height='.3', fixedsize='true', fontsize='16') 
-                self.vert_tree.edge(p, c, arrowsize='.3') # f'cluster_p{c}'
+                self.vert_tree.edge(p, c, arrowsize='.3')
             return self.get_parents(c)
         
         def plot_filial_generation(c:str):
@@ -222,11 +200,32 @@ class RongZi(object):
                 if newfolk: stack = stack + newfolk
                 
         recurse(c, plot_parental_generation)
-        
         plot_filial_generation(c)
         
-        
         return excess_kids
+    
+    def get_paths_graph(pp: pd.DataFrame):
+        g = graphviz.Digraph()
+        pp = pp.iloc[0]
+        node_pairs = pp.index.to_list()
+        paths = pp.map(lambda x: x[1:-1]).to_list()
+        node_pairs, paths
+        
+        g.node(node_pairs[0][0])
+        for i in range(3):
+            label = f"""<
+            <TABLE><TR>
+                {''.join(['<TD>'+j+'</TD>' for j in paths[i]])}
+            </TR></TABLE>
+            >"""
+            g.node(paths[i], label=label)
+            g.edge(node_pairs[i][0], paths[i])
+            g.node(node_pairs[i][1])
+            g.edge(paths[i], node_pairs[i][1])
+
+        return g            
+
+    
     
     ccd, pdb, kdb = _load_class_objects()
 
