@@ -192,7 +192,7 @@ linkback_markdown = """
     """
 todo_markdown = """
     TODO list:
-    - App currently mixes "Traditional" character components as found in Taiwan (ROC) and "Simplified" components as in Mainland China (PRC). Alternative options for managing this aspect should be available.
+    - App currently mixes Traditional character components as found in Taiwan (ROC) and Simplified components as in Mainland China (PRC). Alternative options for managing this aspect should be available.
     - Many components have very low use-frequency, and are nonetheless treated equivalently as more common characters. Prioritizing high-frequency characters and components when optimizing phrase-paths should be implemented.
     - For the Chinese-language-learner use-case, adding in example sentences using the proverbs would be helpful.
     """
@@ -202,7 +202,7 @@ def main():
     page_titles = ["Proverb Exploration","Family-Tree Graph Visualization"]
     page = st.sidebar.radio('', page_titles, index=0)
     st.sidebar.markdown('')
-    st.sidebar.markdown(traditional_chars_disclaimer)
+    st.sidebar.markdown(todo_markdown)
     if page == page_titles[0]:
         phrase()
     elif page == page_titles[1]:
