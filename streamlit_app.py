@@ -190,9 +190,12 @@ linkback_markdown = """
     ---
     # rongzi app demo
     """
-traditional_chars_disclaimer = """
-    *App currently mixes "Traditional" character components as found in Taiwan (ROC) and "Simplified" components as in Mainland China (PRC).
-    Additional features regarding this aspect is a feature on the TODO list.*"""
+todo_markdown = """
+    TODO list:
+    - App currently mixes "Traditional" character components as found in Taiwan (ROC) and "Simplified" components as in Mainland China (PRC). Alternative options for managing this aspect should be available.
+    - Many components have very low use-frequency, and are nonetheless treated equivalently as more common characters. Prioritizing high-frequency characters and components when optimizing phrase-paths should be implemented.
+    - For the Chinese-language-learner use-case, adding in example sentences using the proverbs would be helpful.
+    """
 
 def main():
     st.sidebar.markdown(linkback_markdown)
