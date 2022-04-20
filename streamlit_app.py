@@ -11,7 +11,8 @@ rz = rongzi.RongZi()
 
 def phrase():
     st.title("Phrase Path Visualization")
-
+    st.markdown('Like "six degrees of separation," for Chinese Characters.')
+    st.markdown('---')
     def load_chengyus() -> pd.DataFrame:
         """Get dataframe of chengyu data"""
         chengyus = pd.read_csv('./assets/chengyu.tsv', sep='\t').set_index('Proverb')
@@ -65,29 +66,28 @@ def phrase():
         "Display alternative paths as dataframe results"
         if pp.empty:
             return None
+        st.markdown('---')
         st.markdown("#### Alternative paths between each character in the phrase.")
         st.markdown(pp.to_markdown(index=False))
         return None
+    
+    def show_chengyu_info():
+        # show translation of chengyu (if it's a chengyu)
+        if input_method == input_methods[0]: 
+            chengyu = chengyus.loc[p]
+            chengyu = "**"+chengyu.index+"**: " + chengyu
+            chengyu = '  \n'.join(chengyu)
+            st.markdown(chengyu)        
     
     chengyus = load_chengyus()
     input_method, input_methods = choose_input_method()
     p = get_phrase()
     
-    # Perform the component path optimization
-    phrase_paths = rz.analyze_sequence(p)
+    phrase_paths = rz.analyze_sequence(p) # Optimize component path
+    st.markdown(f"## {p}") # show phrase
+    show_path_graph(p, phrase_paths) 
+    show_chengyu_info() # only if user selected "random proverb"
     
-    # show phrase
-    st.markdown(f"## {p}")
-    
-    show_path_graph(p, phrase_paths)
-
-    # show translation of chengyu (if it's a chengyu)
-    if input_method == input_methods[0]: 
-        chengyu = chengyus.loc[p]
-        chengyu = "**"+chengyu.index+"**: " + chengyu
-        chengyu = '  \n'.join(chengyu)
-        st.markdown(chengyu)        
-
     # TODO: PUT THIS IN A "DETAILS" DROP-DOWN
     show_alternative_paths(phrase_paths)
 
@@ -167,7 +167,7 @@ def export_graphviz_pdf(filename:str, dot):
     def _create_download_link(val, filename):
         b64 = base64.b64encode(val)  # val looks like b'...'
         return_str = f'''<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}.pdf">Download pdf</a>  
-        (Pdf format may be easier to resize and view.)'''
+        <i>(Pdf format may be easier to resize and view.)</i>'''
         return return_str
 
     pdf = FPDF()
@@ -178,7 +178,9 @@ def export_graphviz_pdf(filename:str, dot):
         st.markdown(html, unsafe_allow_html=True)
 
 linkback_markdown = """
-    ## Back to the [rongzi github page](http://github.com/bhrdj/rongzi).
+    #### links to:
+    - My portfolio: [portfolio.bhrdwj.net](portfolio.bhrdwj.net)
+    - This app's github: [github.com/bhrdj/rongzi](github.com/bhrdj/rongzi)
     ---
     # rongzi app demo
     """
