@@ -60,7 +60,7 @@ def phrase():
             return None
         dot = rz.get_paths_graph(pp)
         st.graphviz_chart(dot)
-        export_graphviz_pdf(phrase, dot)
+        # export_graphviz_pdf(phrase, dot)
         
     def show_alternative_paths(pp:pd.DataFrame):
         "Display alternative paths as dataframe results"
