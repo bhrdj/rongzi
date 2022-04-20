@@ -162,25 +162,31 @@ def family_tree():
         st.markdown(f'*Note: Some components in this tree are so common that they are present in more than {max_sibs} larger characters. '\
                     f'So, the children of the following list of characters: {excess_kids} were truncated to a maximum of {max_sibs} in this graph.*')
     
-# def export_graphviz_pdf(filename:str, dot):
+def export_graphviz_pdf(filename:str, dot):
+    # REMOVED THIS FUNCTION BECAUSE IT WASN'T WORKING YET ON STREAMLIT CLOUD
+    #    (IT WAS WORKING ON STREAMLIT HOSTED ON MY AWS EC2 INSTANCE, 
+    #     BUT LOCALLY-HOSTED STREAMLIT ONLY NATIVELY OFFERS HTTP, NOT HTTPS.)
+    # THE ISSUE MAY HAVE HAD SOMETHING TO DO WITH GRAPHVIZ ITSELF NEEDING TO BE
+    #    INSTALLED ON THE SERVER ITSELF, NOT JUST THE PYTHON GRAPHVIZ LIBRARY,
+    #    FOR THE PDF EXPORT TO WORK RIGHT.
+    # def _create_download_link(val, filename):
+    #     b64 = base64.b64encode(val)  # val looks like b'...'
+    #     return_str = f'''<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}.pdf">Download pdf</a>  
+    #     <i>(Pdf format may be easier to resize and view.)</i>'''
+    #     return return_str
 
-#     def _create_download_link(val, filename):
-#         b64 = base64.b64encode(val)  # val looks like b'...'
-#         return_str = f'''<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}.pdf">Download pdf</a>  
-#         <i>(Pdf format may be easier to resize and view.)</i>'''
-#         return return_str
-
-#     pdf = FPDF()
-#     pdf.add_page()
-#     with NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
-#         bytes_file = graphviz.pipe('dot', 'pdf', bytes(dot.source, 'utf-8'))
-#         html = _create_download_link(bytes_file, filename)
-#         st.markdown(html, unsafe_allow_html=True)
+    # pdf = FPDF()
+    # pdf.add_page()
+    # with NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
+    #     bytes_file = graphviz.pipe('dot', 'pdf', bytes(dot.source, 'utf-8'))
+    #     html = _create_download_link(bytes_file, filename)
+    #     st.markdown(html, unsafe_allow_html=True)
+    pass
 
 linkback_markdown = """
     #### links to:
-    - My portfolio: [portfolio.bhrdwj.net](portfolio.bhrdwj.net)
-    - This app's github: [github.com/bhrdj/rongzi](github.com/bhrdj/rongzi)
+    - My portfolio: [portfolio.bhrdwj.net](https://portfolio.bhrdwj.net)
+    - This app's github: [github.com/bhrdj/rongzi](https://github.com/bhrdj/rongzi)
     ---
     # rongzi app demo
     """
