@@ -155,27 +155,27 @@ def family_tree():
         st.markdown(f"## {c}")
         tree_rz = rongzi.RongZi(c)
         excess_kids = tree_rz.get_vertical_family_tree(max_sibs)
-        export_graphviz_pdf(f"family_tree_{c}", tree_rz.vert_tree)
+        # export_graphviz_pdf(f"family_tree_{c}", tree_rz.vert_tree)
         st.graphviz_chart(tree_rz.vert_tree)
     
     if excess_kids:
         st.markdown(f'*Note: Some components in this tree are so common that they are present in more than {max_sibs} larger characters. '\
                     f'So, the children of the following list of characters: {excess_kids} were truncated to a maximum of {max_sibs} in this graph.*')
     
-def export_graphviz_pdf(filename:str, dot):
+# def export_graphviz_pdf(filename:str, dot):
 
-    def _create_download_link(val, filename):
-        b64 = base64.b64encode(val)  # val looks like b'...'
-        return_str = f'''<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}.pdf">Download pdf</a>  
-        <i>(Pdf format may be easier to resize and view.)</i>'''
-        return return_str
+#     def _create_download_link(val, filename):
+#         b64 = base64.b64encode(val)  # val looks like b'...'
+#         return_str = f'''<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}.pdf">Download pdf</a>  
+#         <i>(Pdf format may be easier to resize and view.)</i>'''
+#         return return_str
 
-    pdf = FPDF()
-    pdf.add_page()
-    with NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
-        bytes_file = graphviz.pipe('dot', 'pdf', bytes(dot.source, 'utf-8'))
-        html = _create_download_link(bytes_file, filename)
-        st.markdown(html, unsafe_allow_html=True)
+#     pdf = FPDF()
+#     pdf.add_page()
+#     with NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
+#         bytes_file = graphviz.pipe('dot', 'pdf', bytes(dot.source, 'utf-8'))
+#         html = _create_download_link(bytes_file, filename)
+#         st.markdown(html, unsafe_allow_html=True)
 
 linkback_markdown = """
     #### links to:
