@@ -197,6 +197,7 @@ todo_markdown = """
     - App currently mixes Traditional character components as found in Taiwan (ROC) and Simplified components as in Mainland China (PRC). Alternative options for managing this aspect should be available.
     - Many components have very low use-frequency, and are nonetheless treated equivalently as more common characters. Prioritizing high-frequency characters and components when optimizing phrase-paths should be implemented.
     - For the Chinese-language-learner use-case, adding in example sentences using the proverbs would be helpful.
+    - Remove redundant circles and boxes around phrase-paths graph visualization.
     """
 
 def main():
