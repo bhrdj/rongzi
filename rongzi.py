@@ -212,7 +212,7 @@ class RongZi(object):
         node_pairs, paths
         
         g.node(node_pairs[0][0])
-        for i in range(3):
+        for i in range(len(pp)):
             label = f"""<
             <TABLE><TR>
                 {''.join(['<TD>'+j+'</TD>' for j in paths[i]])}
