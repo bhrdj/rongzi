@@ -69,3 +69,5 @@ and honor.
 - Refactor (ccd, pdb, kdb) as class property methods:
     - https://stackoverflow.com/questions/128573/using-property-on-classmethods
 - Allow to choose between CJK languages/scripts (CH, JA, TW)
+- Create CICD pipeline using github actions.
+- Dockerize application
